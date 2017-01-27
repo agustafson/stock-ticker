@@ -1,4 +1,4 @@
-package ticker
+package ticker.service
 
 import java.time.LocalDate
 
@@ -8,7 +8,6 @@ import org.http4s.client.blaze.SimpleHttp1Client
 import org.scalactic.TypeCheckedTripleEquals
 import org.scalatest.{FunSpec, Matchers}
 import ticker.model.{StockTick, TickSymbol}
-import ticker.service.YahooStockTickerService
 
 class YahooStockTickerServiceTest extends FunSpec with Matchers with TypeCheckedTripleEquals {
 
@@ -38,4 +37,5 @@ class YahooStockTickerServiceTest extends FunSpec with Matchers with TypeChecked
         }
     }
   }
+
 }
