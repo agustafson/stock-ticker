@@ -17,4 +17,9 @@ class StockValuationService(stockTickerService: StockTickerService) {
           (tickCurrent.close - tickPrevious.close) / tickPrevious.close
       }.toList
     }
+
+  def meanAnnualReturn(businessDate: LocalDate, ticker: TickSymbol): Task[Option[BigDecimal]] =
+    dailyReturns(businessDate, ticker).map { returns =>
+      Some(returns.size).filterNot(_ == 0).map(returns.sum / _)
+    }
 }

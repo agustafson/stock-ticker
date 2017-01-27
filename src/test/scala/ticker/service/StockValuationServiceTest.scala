@@ -61,6 +61,27 @@ class StockValuationServiceTest extends FunSpec with Matchers with MockFactory w
         results shouldBe 'empty
       }
     }
+
+    describe("should calculate the 1-year mean return") {
+      it("from a valid date for a known tick symbol") {
+        val tickSymbol   = TickSymbol("GOOG")
+        val businessDate = LocalDate.of(2017, 1, 27)
+        (stockTickerService.dailyPrices _).when(businessDate, tickSymbol).returns(Task.now(testDataSet))
+
+        val result = stockValuationService.meanAnnualReturn(businessDate, tickSymbol).unsafePerformSync
+        result shouldBe 'defined
+        result.get should ===(BigDecimal("0.00082419") +- 0.00000001)
+      }
+
+      it("from a valid date for an unknown tick symbol") {
+        val tickSymbol   = TickSymbol("ZZZZ")
+        val businessDate = LocalDate.of(2017, 1, 27)
+        (stockTickerService.dailyPrices _).when(businessDate, tickSymbol).returns(Task.now(List.empty))
+
+        val result = stockValuationService.meanAnnualReturn(businessDate, tickSymbol).unsafePerformSync
+        result should ===(None)
+      }
+    }
   }
 
 }
