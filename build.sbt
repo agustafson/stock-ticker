@@ -24,7 +24,8 @@ scalacOptions ++= Seq(
 )
 
 libraryDependencies ++= Seq(
-  "org.http4s"    %% "http4s-client"       % "0.15.3a",
-  "com.itv"       %% "scalapact-scalatest" % "2.1.2" % "test",
-  "org.scalatest" %% "scalatest"           % "3.0.1" % "test"
+  "org.http4s"    %% "http4s-client"               % "0.15.3a",
+  "com.itv"       %% "scalapact-scalatest"         % "2.1.2" % Test,
+  "org.scalatest" %% "scalatest"                   % "3.0.1" % Test,
+  "org.scalamock" %% "scalamock-scalatest-support" % "3.4.2" % Test
 )
