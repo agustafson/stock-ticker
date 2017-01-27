@@ -4,21 +4,21 @@ import java.time.LocalDate
 
 import org.http4s.Uri
 import org.http4s.client.Client
-import ticker.model.StockTick
+import ticker.model.{StockTick, TickSymbol}
 
 import scala.io.Source
 import scalaz.concurrent.Task
 
 trait StockTickerService {
-  def dailyPrices(businessDate: LocalDate, ticker: String): Task[List[StockTick]]
+  def dailyPrices(businessDate: LocalDate, ticker: TickSymbol): Task[List[StockTick]]
 }
 
 class YahooStockTickerService(httpClient: Client, baseUri: Uri) extends StockTickerService {
 
-  private def pricesURL(businessDate: LocalDate, ticker: String): Uri = {
+  private def pricesURL(businessDate: LocalDate, ticker: TickSymbol): Uri = {
     val lastYear = businessDate.minusYears(1)
     baseUri
-      .withQueryParam("s", ticker)
+      .withQueryParam("s", ticker.symbol)
       .withQueryParam("a", lastYear.getMonthValue)
       .withQueryParam("b", lastYear.getDayOfMonth)
       .withQueryParam("c", lastYear.getYear)
@@ -39,7 +39,7 @@ class YahooStockTickerService(httpClient: Client, baseUri: Uri) extends StockTic
               BigDecimal(arr(6)))
   }
 
-  def dailyPrices(businessDate: LocalDate, ticker: String): Task[List[StockTick]] = {
+  def dailyPrices(businessDate: LocalDate, ticker: TickSymbol): Task[List[StockTick]] = {
     httpClient.expect[String](pricesURL(businessDate, ticker)).map { csvResults =>
       Source
         .fromString(csvResults)

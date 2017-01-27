@@ -7,7 +7,7 @@ import org.http4s.Uri
 import org.http4s.client.blaze.SimpleHttp1Client
 import org.scalactic.TypeCheckedTripleEquals
 import org.scalatest.{FunSpec, Matchers}
-import ticker.model.StockTick
+import ticker.model.{StockTick, TickSymbol}
 import ticker.service.YahooStockTickerService
 
 class YahooStockTickerServiceTest extends FunSpec with Matchers with TypeCheckedTripleEquals {
@@ -29,7 +29,7 @@ class YahooStockTickerServiceTest extends FunSpec with Matchers with TypeChecked
           val stockTickerService =
             new YahooStockTickerService(client, Uri.fromString(config.baseUrl).valueOr(throw _))
 
-          val results = stockTickerService.dailyPrices(LocalDate.of(2017, 1, 27), "GOOG").unsafePerformSync
+          val results = stockTickerService.dailyPrices(LocalDate.of(2017, 1, 27), TickSymbol("GOOG")).unsafePerformSync
           results should have size 231
           results.head should ===(
             StockTick(LocalDate.of(2017, 1, 26), 837.809998, 838.00, 827.01001, 832.150024, 2734400, 832.150024))
