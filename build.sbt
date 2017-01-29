@@ -29,3 +29,6 @@ libraryDependencies ++= Seq(
   "org.scalatest" %% "scalatest"                   % "3.0.1" % Test,
   "org.scalamock" %% "scalamock-scalatest-support" % "3.4.2" % Test
 )
+
+configs(IntegrationTest)
+Defaults.itSettings

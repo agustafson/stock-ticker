@@ -17,14 +17,19 @@ trait StockTickerService {
 
 class YahooStockTickerService(httpClient: Client, baseUri: Uri) extends StockTickerService {
 
+  /*
+   * Details for url structure are listed under "Historical data" at
+   * [[http://meumobi.github.io/stocks%20apis/2016/03/13/get-realtime-stock-quotes-yahoo-finance-api.html]]
+   * Months are zero-based indices as per documentation.
+   */
   private def pricesURL(businessDate: LocalDate, ticker: TickSymbol): Uri = {
     val lastYear = businessDate.minusYears(1)
     (baseUri / "table.csv")
       .withQueryParam("s", ticker.symbol)
-      .withQueryParam("a", lastYear.getMonthValue)
+      .withQueryParam("a", lastYear.getMonthValue - 1)
       .withQueryParam("b", lastYear.getDayOfMonth)
       .withQueryParam("c", lastYear.getYear)
-      .withQueryParam("d", businessDate.getMonthValue)
+      .withQueryParam("d", businessDate.getMonthValue - 1)
       .withQueryParam("e", businessDate.getDayOfMonth)
       .withQueryParam("f", businessDate.getYear)
       .withQueryParam("g", "d")
