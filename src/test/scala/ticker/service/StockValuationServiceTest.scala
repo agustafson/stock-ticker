@@ -25,9 +25,9 @@ class StockValuationServiceTest extends FunSpec with Matchers with MockFactory w
         (stockTickerService.dailyPrices _).when(businessDate, tickSymbol).returns(Task.now(testDataSet))
 
         val results = stockValuationService.dailyPrices(businessDate, tickSymbol).unsafePerformSync
-        results should have size 231
-        results.head should ===(BigDecimal("832.150024"))
-        results.last should ===(BigDecimal("697.77002"))
+        results should have size 254
+        results.head should ===(BigDecimal("823.309998"))
+        results.last should ===(BigDecimal("699.98999"))
       }
 
       it("from a valid date for an unknown tick symbol") {
@@ -47,9 +47,9 @@ class StockValuationServiceTest extends FunSpec with Matchers with MockFactory w
         (stockTickerService.dailyPrices _).when(businessDate, tickSymbol).returns(Task.now(testDataSet))
 
         val results = stockValuationService.dailyReturns(businessDate, tickSymbol).unsafePerformSync
-        results should have size 230
-        results.head should ===(BigDecimal("-0.00421214004") +- 0.00000000001)
-        results.last should ===(BigDecimal("0.03015316995") +- 0.00000000001)
+        results should have size 253
+        results.head should ===(BigDecimal("-0.010623116") +- 0.000000001)
+        results.last should ===(BigDecimal("0.044243536") +- 0.000000001)
       }
 
       it("from a valid date for an unknown tick symbol") {
@@ -70,7 +70,7 @@ class StockValuationServiceTest extends FunSpec with Matchers with MockFactory w
 
         val result = stockValuationService.meanAnnualReturn(businessDate, tickSymbol).unsafePerformSync
         result shouldBe 'defined
-        result.get should ===(BigDecimal("0.00082419") +- 0.00000001)
+        result.get should ===(BigDecimal("0.000711926") +- 0.00000001)
       }
 
       it("from a valid date for an unknown tick symbol") {
