@@ -19,7 +19,7 @@ class YahooStockTickerService(httpClient: Client, baseUri: Uri) extends StockTic
 
   private def pricesURL(businessDate: LocalDate, ticker: TickSymbol): Uri = {
     val lastYear = businessDate.minusYears(1)
-    baseUri
+    (baseUri / "table.csv")
       .withQueryParam("s", ticker.symbol)
       .withQueryParam("a", lastYear.getMonthValue)
       .withQueryParam("b", lastYear.getDayOfMonth)

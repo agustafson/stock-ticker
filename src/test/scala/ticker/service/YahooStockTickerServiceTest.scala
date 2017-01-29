@@ -23,7 +23,7 @@ class YahooStockTickerServiceTest extends FunSpec with Matchers with TypeChecked
         .addInteraction(
           interaction
             .description("a simple get example")
-            .uponReceiving(GET, "/", query = Some("s=GOOG&a=1&b=27&c=2016&d=1&e=27&f=2017&g=d&ignore=.csv"))
+            .uponReceiving(GET, "/table.csv", query = Some("s=GOOG&a=1&b=27&c=2016&d=1&e=27&f=2017&g=d&ignore=.csv"))
             .willRespondWith(200, csvResults)
         )
         .runConsumerTest { config =>
@@ -47,7 +47,7 @@ class YahooStockTickerServiceTest extends FunSpec with Matchers with TypeChecked
         .addInteraction(
           interaction
             .description("a simple get example")
-            .uponReceiving(GET, "/", query = Some("s=ZZZZ&a=1&b=27&c=2016&d=1&e=27&f=2017&g=d&ignore=.csv"))
+            .uponReceiving(GET, "/table.csv", query = Some("s=ZZZZ&a=1&b=27&c=2016&d=1&e=27&f=2017&g=d&ignore=.csv"))
             .willRespondWith(404)
         )
         .runConsumerTest { config =>
