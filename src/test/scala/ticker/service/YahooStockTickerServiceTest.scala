@@ -32,11 +32,11 @@ class YahooStockTickerServiceTest extends FunSpec with Matchers with TypeChecked
             new YahooStockTickerService(client, Uri.fromString(config.baseUrl).valueOr(throw _))
 
           val results = stockTickerService.dailyPrices(LocalDate.of(2017, 1, 27), TickSymbol("GOOG")).unsafePerformSync
-          results should have size 231
+          results should have size 254
           results.head should ===(
-            StockTick(LocalDate.of(2017, 1, 26), 837.809998, 838.00, 827.01001, 832.150024, 2734400, 832.150024))
+            StockTick(LocalDate.of(2017, 1, 27), 834.710022, 841.950012, 820.440002, 823.309998, 2951800, 823.309998))
           results.last should ===(
-            StockTick(LocalDate.of(2016, 2, 29), 700.320007, 710.890015, 697.679993, 697.77002, 2481100, 697.77002))
+            StockTick(LocalDate.of(2016, 1, 27), 713.669983, 718.234985, 694.390015, 699.98999, 2194200, 699.98999))
         }
     }
 
