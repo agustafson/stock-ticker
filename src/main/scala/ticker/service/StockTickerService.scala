@@ -2,8 +2,11 @@ package ticker.service
 
 import java.time.LocalDate
 
-import org.http4s.Uri
+import org.http4s.Method.GET
+import org.http4s.Status.NotFound
+import org.http4s.Status.ResponseClass.Successful
 import org.http4s.client.Client
+import org.http4s.{Request, Uri}
 import ticker.model.{StockTick, TickSymbol}
 
 import scalaz.concurrent.Task
@@ -29,6 +32,11 @@ class YahooStockTickerService(httpClient: Client, baseUri: Uri) extends StockTic
   }
 
   def dailyPrices(businessDate: LocalDate, ticker: TickSymbol): Task[List[StockTick]] =
-    httpClient.expect[String](pricesURL(businessDate, ticker)).map(StockTick.parseCsvContents)
+    httpClient.fetch(Request(GET, pricesURL(businessDate, ticker))) {
+      case Successful(response) =>
+        response.as[String].map(StockTick.parseCsvContents)
+      case NotFound(response) =>
+        Task.now(List.empty)
+    }
 
 }
