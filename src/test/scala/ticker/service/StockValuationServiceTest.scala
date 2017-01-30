@@ -2,10 +2,11 @@ package ticker.service
 
 import java.time.LocalDate
 
+import cats.data.Validated
 import org.scalactic.TypeCheckedTripleEquals
 import org.scalatest.{FunSpec, Inspectors, Matchers}
 import org.scalamock.scalatest.MockFactory
-import ticker.model.{StockTick, TickSymbol}
+import ticker.model.{StockTick, StockTickParseError, TickSymbol}
 
 import scala.io.Source
 import scalaz.concurrent.Task
@@ -43,6 +44,19 @@ class StockValuationServiceTest
         val results = stockValuationService.dailyPrices(businessDate, tickSymbol).unsafePerformSync
         results shouldBe 'empty
       }
+
+      it("should return an error if a row is unparseable") {
+        val tickSymbol   = TickSymbol("GOOG")
+        val businessDate = LocalDate.of(2017, 1, 27)
+        val parseError   = Left(StockTickParseError(Array("wibble"), new NumberFormatException("wibble")))
+        (stockTickerService.dailyPrices _)
+          .when(businessDate, tickSymbol)
+          .returns(Task.now(List(parseError)))
+
+        val results = stockValuationService.dailyPrices(businessDate, tickSymbol).unsafePerformSync
+        results should have size 1
+        results.head should ===(parseError)
+      }
     }
 
     describe("should calculate daily returns") {
@@ -66,6 +80,45 @@ class StockValuationServiceTest
         val results = stockValuationService.dailyReturns(businessDate, tickSymbol).unsafePerformSync
         results shouldBe 'empty
       }
+
+      it("should return an error if a single row is unparseable") {
+        val tickSymbol   = TickSymbol("GOOG")
+        val businessDate = LocalDate.of(2017, 1, 27)
+        val parseError   = Left(StockTickParseError(Array("wibble"), new NumberFormatException("wibble")))
+        (stockTickerService.dailyPrices _)
+          .when(businessDate, tickSymbol)
+          .returns(Task.now(List(parseError)))
+
+        val results = stockValuationService.dailyReturns(businessDate, tickSymbol).unsafePerformSync
+        results should have size 1
+        results.head should ===(parseError)
+      }
+
+      it("should return an error if the first row is unparseable") {
+        val tickSymbol   = TickSymbol("GOOG")
+        val businessDate = LocalDate.of(2017, 1, 27)
+        val parseError   = Left(StockTickParseError(Array("wibble"), new NumberFormatException("wibble")))
+        (stockTickerService.dailyPrices _)
+          .when(businessDate, tickSymbol)
+          .returns(Task.now(List(parseError, Right(StockTick(businessDate, 1, 1, 1, 1, 1, 1)))))
+
+        val results = stockValuationService.dailyReturns(businessDate, tickSymbol).unsafePerformSync
+        results should have size 1
+        results.head should ===(parseError)
+      }
+
+      it("should return an error if the second row is unparseable") {
+        val tickSymbol   = TickSymbol("GOOG")
+        val businessDate = LocalDate.of(2017, 1, 27)
+        val parseError   = Left(StockTickParseError(Array("wibble"), new NumberFormatException("wibble")))
+        (stockTickerService.dailyPrices _)
+          .when(businessDate, tickSymbol)
+          .returns(Task.now(List(Right(StockTick(businessDate, 1, 1, 1, 1, 1, 1)), parseError)))
+
+        val results = stockValuationService.dailyReturns(businessDate, tickSymbol).unsafePerformSync
+        results should have size 1
+        results.head should ===(parseError)
+      }
     }
 
     describe("should calculate the 1-year mean return") {
@@ -86,6 +139,45 @@ class StockValuationServiceTest
 
         val result = stockValuationService.meanAnnualReturn(businessDate, tickSymbol).unsafePerformSync
         result should ===(None)
+      }
+
+      it("should return an error if a single row is unparseable") {
+        val tickSymbol   = TickSymbol("GOOG")
+        val businessDate = LocalDate.of(2017, 1, 27)
+        val parseError   = StockTickParseError(Array("wibble"), new NumberFormatException("wibble"))
+        (stockTickerService.dailyPrices _)
+          .when(businessDate, tickSymbol)
+          .returns(Task.now(List(Left(parseError))))
+
+        val result = stockValuationService.meanAnnualReturn(businessDate, tickSymbol).unsafePerformSync
+        result shouldBe 'defined
+        result.get should ===(Validated.invalidNel(parseError))
+      }
+
+      it("should return an error if the first row is unparseable") {
+        val tickSymbol   = TickSymbol("GOOG")
+        val businessDate = LocalDate.of(2017, 1, 27)
+        val parseError   = StockTickParseError(Array("wibble"), new NumberFormatException("wibble"))
+        (stockTickerService.dailyPrices _)
+          .when(businessDate, tickSymbol)
+          .returns(Task.now(List(Left(parseError), Right(StockTick(businessDate, 1, 1, 1, 1, 1, 1)))))
+
+        val result = stockValuationService.meanAnnualReturn(businessDate, tickSymbol).unsafePerformSync
+        result shouldBe 'defined
+        result.get should ===(Validated.invalidNel(parseError))
+      }
+
+      it("should return an error if the second row is unparseable") {
+        val tickSymbol   = TickSymbol("GOOG")
+        val businessDate = LocalDate.of(2017, 1, 27)
+        val parseError   = StockTickParseError(Array("wibble"), new NumberFormatException("wibble"))
+        (stockTickerService.dailyPrices _)
+          .when(businessDate, tickSymbol)
+          .returns(Task.now(List(Right(StockTick(businessDate, 1, 1, 1, 1, 1, 1)), Left(parseError))))
+
+        val result = stockValuationService.meanAnnualReturn(businessDate, tickSymbol).unsafePerformSync
+        result shouldBe 'defined
+        result.get should ===(Validated.invalidNel(parseError))
       }
     }
   }

@@ -19,10 +19,10 @@ class StockValuationService(stockTickerService: StockTickerService) {
       _.sliding(2).map {
         case List(Right(tickCurrent), Right(tickPrevious)) =>
           Right((tickCurrent.close - tickPrevious.close) / tickPrevious.close)
-//        case List(Left(error), _) =>
-//          Left(error)
-//        case List(_, Left(error)) =>
-//          Left(error)
+        case Left(error) :: _ =>
+          Left(error)
+        case List(_, Left(error)) =>
+          Left(error)
       }.toList
     }
 
