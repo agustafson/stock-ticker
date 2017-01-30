@@ -20,8 +20,8 @@ class YahooStockTickerServiceIT extends FunSpec with Matchers with Inspectors wi
 
       forAll(dates) { date =>
         val results = stockTickerService.dailyPrices(date, TickSymbol("GOOG")).unsafePerformSync
-        results.head.date should ===(date)
-        results.last.date should ===(date.minusYears(1))
+        results.head.map(_.date) should ===(Right(date))
+        results.last.map(_.date) should ===(Right(date.minusYears(1)))
       }
     }
   }

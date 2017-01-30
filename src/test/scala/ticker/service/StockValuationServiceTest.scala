@@ -3,14 +3,19 @@ package ticker.service
 import java.time.LocalDate
 
 import org.scalactic.TypeCheckedTripleEquals
-import org.scalatest.{FunSpec, Matchers}
+import org.scalatest.{FunSpec, Inspectors, Matchers}
 import org.scalamock.scalatest.MockFactory
 import ticker.model.{StockTick, TickSymbol}
 
 import scala.io.Source
 import scalaz.concurrent.Task
 
-class StockValuationServiceTest extends FunSpec with Matchers with MockFactory with TypeCheckedTripleEquals {
+class StockValuationServiceTest
+    extends FunSpec
+    with Matchers
+    with Inspectors
+    with MockFactory
+    with TypeCheckedTripleEquals {
 
   val stockTickerService    = stub[StockTickerService]
   val stockValuationService = new StockValuationService(stockTickerService)
@@ -26,8 +31,8 @@ class StockValuationServiceTest extends FunSpec with Matchers with MockFactory w
 
         val results = stockValuationService.dailyPrices(businessDate, tickSymbol).unsafePerformSync
         results should have size 254
-        results.head should ===(BigDecimal("823.309998"))
-        results.last should ===(BigDecimal("699.98999"))
+        results.head.getOrElse(fail("No first result")) should ===(BigDecimal("823.309998"))
+        results.last.getOrElse(fail("No last result")) should ===(BigDecimal("699.98999"))
       }
 
       it("from a valid date for an unknown tick symbol") {
@@ -48,8 +53,9 @@ class StockValuationServiceTest extends FunSpec with Matchers with MockFactory w
 
         val results = stockValuationService.dailyReturns(businessDate, tickSymbol).unsafePerformSync
         results should have size 253
-        results.head should ===(BigDecimal("-0.010623116") +- 0.000000001)
-        results.last should ===(BigDecimal("0.044243536") +- 0.000000001)
+        forAll(results)(_.isRight)
+        results.head.getOrElse(fail("No first result")) should ===(BigDecimal("-0.010623116") +- 0.000000001)
+        results.last.getOrElse(fail("No last result")) should ===(BigDecimal("0.044243536") +- 0.000000001)
       }
 
       it("from a valid date for an unknown tick symbol") {
@@ -70,7 +76,7 @@ class StockValuationServiceTest extends FunSpec with Matchers with MockFactory w
 
         val result = stockValuationService.meanAnnualReturn(businessDate, tickSymbol).unsafePerformSync
         result shouldBe 'defined
-        result.get should ===(BigDecimal("0.000711926") +- 0.00000001)
+        result.get.getOrElse(fail("Could not find result")) should ===(BigDecimal("0.000711926") +- 0.00000001)
       }
 
       it("from a valid date for an unknown tick symbol") {

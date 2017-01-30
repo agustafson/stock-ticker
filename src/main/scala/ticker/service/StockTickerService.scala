@@ -7,12 +7,12 @@ import org.http4s.Status.NotFound
 import org.http4s.Status.ResponseClass.Successful
 import org.http4s.client.Client
 import org.http4s.{Request, Uri}
-import ticker.model.{StockTick, TickSymbol}
+import ticker.model.{StockTick, StockTickParseError, TickSymbol}
 
 import scalaz.concurrent.Task
 
 trait StockTickerService {
-  def dailyPrices(businessDate: LocalDate, ticker: TickSymbol): Task[List[StockTick]]
+  def dailyPrices(businessDate: LocalDate, ticker: TickSymbol): Task[List[Either[StockTickParseError, StockTick]]]
 }
 
 class YahooStockTickerService(httpClient: Client, baseUri: Uri) extends StockTickerService {
@@ -36,11 +36,11 @@ class YahooStockTickerService(httpClient: Client, baseUri: Uri) extends StockTic
       .withQueryParam("ignore", ".csv")
   }
 
-  def dailyPrices(businessDate: LocalDate, ticker: TickSymbol): Task[List[StockTick]] =
+  def dailyPrices(businessDate: LocalDate, ticker: TickSymbol): Task[List[Either[StockTickParseError, StockTick]]] =
     httpClient.fetch(Request(GET, pricesURL(businessDate, ticker))) {
       case Successful(response) =>
         response.as[String].map(StockTick.parseCsvContents)
-      case NotFound(response) =>
+      case NotFound(_) =>
         Task.now(List.empty)
     }
 

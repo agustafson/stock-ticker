@@ -2,7 +2,10 @@ package ticker.model
 
 import java.time.LocalDate
 
+import cats.syntax.either._
+
 import scala.io.Source
+import scala.util.Try
 
 case class StockTick(date: LocalDate,
                      open: BigDecimal,
@@ -13,15 +16,18 @@ case class StockTick(date: LocalDate,
                      adjClose: BigDecimal)
 
 object StockTick {
-  def parseCsvContents(csvResults: String): List[StockTick] = {
-    def stockTickFromArray(arr: Array[String]): StockTick = {
-      StockTick(LocalDate.parse(arr(0)),
-                BigDecimal(arr(1)),
-                BigDecimal(arr(2)),
-                BigDecimal(arr(3)),
-                BigDecimal(arr(4)),
-                arr(5).toInt,
-                BigDecimal(arr(6)))
+
+  def parseCsvContents(csvResults: String): List[Either[StockTickParseError, StockTick]] = {
+    def stockTickFromArray(row: Array[String]): Either[StockTickParseError, StockTick] = {
+      Try {
+        StockTick(LocalDate.parse(row(0)),
+                  BigDecimal(row(1)),
+                  BigDecimal(row(2)),
+                  BigDecimal(row(3)),
+                  BigDecimal(row(4)),
+                  row(5).toInt,
+                  BigDecimal(row(6)))
+      }.toEither.leftMap(StockTickParseError(row, _))
     }
 
     Source
@@ -35,3 +41,5 @@ object StockTick {
   }
 
 }
+
+case class StockTickParseError(row: Array[String], exception: Throwable)

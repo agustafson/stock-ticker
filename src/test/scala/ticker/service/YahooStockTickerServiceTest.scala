@@ -3,6 +3,7 @@ package ticker.service
 import java.time.LocalDate
 
 import com.itv.scalapact.ScalaPactForger._
+import com.itv.scalapact.ScalaPactMockConfig
 import org.http4s.Uri
 import org.http4s.client.blaze.SimpleHttp1Client
 import org.scalactic.TypeCheckedTripleEquals
@@ -27,15 +28,13 @@ class YahooStockTickerServiceTest extends FunSpec with Matchers with TypeChecked
             .willRespondWith(200, csvResults)
         )
         .runConsumerTest { config =>
-          val client = SimpleHttp1Client()
-          val stockTickerService =
-            new YahooStockTickerService(client, Uri.fromString(config.baseUrl).valueOr(throw _))
+          val stockTickerService: YahooStockTickerService = newYahooStockTickerService(config)
 
           val results = stockTickerService.dailyPrices(LocalDate.of(2017, 1, 27), TickSymbol("GOOG")).unsafePerformSync
           results should have size 254
-          results.head should ===(
+          results.head.getOrElse(fail("No first result")) should ===(
             StockTick(LocalDate.of(2017, 1, 27), 834.710022, 841.950012, 820.440002, 823.309998, 2951800, 823.309998))
-          results.last should ===(
+          results.last.getOrElse(fail("No last result")) should ===(
             StockTick(LocalDate.of(2016, 1, 27), 713.669983, 718.234985, 694.390015, 699.98999, 2194200, 699.98999))
         }
     }
@@ -51,9 +50,7 @@ class YahooStockTickerServiceTest extends FunSpec with Matchers with TypeChecked
             .willRespondWith(404)
         )
         .runConsumerTest { config =>
-          val client = SimpleHttp1Client()
-          val stockTickerService =
-            new YahooStockTickerService(client, Uri.fromString(config.baseUrl).valueOr(throw _))
+          val stockTickerService: YahooStockTickerService = newYahooStockTickerService(config)
 
           val results = stockTickerService.dailyPrices(LocalDate.of(2017, 1, 27), TickSymbol("GOOG")).unsafePerformSync
           results shouldBe 'empty
@@ -61,4 +58,7 @@ class YahooStockTickerServiceTest extends FunSpec with Matchers with TypeChecked
     }
   }
 
+  private def newYahooStockTickerService(config: ScalaPactMockConfig) = {
+    new YahooStockTickerService(SimpleHttp1Client(), Uri.fromString(config.baseUrl).valueOr(throw _))
+  }
 }

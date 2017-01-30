@@ -23,12 +23,17 @@ scalacOptions ++= Seq(
   "-Ywarn-value-discard"
 )
 
-libraryDependencies ++= Seq(
-  "org.http4s"    %% "http4s-client"               % "0.15.3a",
-  "com.itv"       %% "scalapact-scalatest"         % "2.1.2" % Test,
-  "org.scalatest" %% "scalatest"                   % "3.0.1" % Test,
-  "org.scalamock" %% "scalamock-scalatest-support" % "3.4.2" % Test
-)
+libraryDependencies ++= {
+  val http4sVersion = "0.15.3a"
+  Seq(
+    "org.typelevel" %% "cats"                        % "0.9.0",
+    "org.http4s"    %% "http4s-client"               % http4sVersion,
+    "com.itv"       %% "scalapact-scalatest"         % "2.1.2" % Test,
+    "org.scalatest" %% "scalatest"                   % "3.0.1" % "test,it",
+    "org.scalamock" %% "scalamock-scalatest-support" % "3.4.2" % Test,
+    "org.http4s"    %% "http4s-blaze-client"         % http4sVersion % "test,it"
+  )
+}
 
 configs(IntegrationTest)
 Defaults.itSettings
